@@ -4,8 +4,12 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
+	"github.com/manifoldco/promptui"
+	"github.com/spf13/viper"
 	"github.com/urfave/cli"
 )
 
@@ -18,14 +22,58 @@ func getFormatDuation(nanoseconds int64) (int64, int64, int64) {
 	return hours, minutes, seconds
 }
 
+func init() {
+	viper.SetConfigType("json")
+	viper.SetConfigName("config")         // name of config file (without extension)
+	viper.AddConfigPath("/etc/offowork/") // path to look for the config file in
+	viper.AddConfigPath("$HOME/.offwork") // call multiple times to add many search paths
+	viper.AddConfigPath(".")              // optionally look for config in the working directory
+	err := viper.ReadInConfig()           // Find and read the config file
+	if err != nil {                       // Handle errors reading the config file
+		viper.SetDefault("time", "19:00")
+		fmt.Println("初始化中……")
+		viper.WriteConfigAs("config.json")
+		viper.ReadInConfig()
+	}
+}
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "offwork"
 	app.Usage = "啥时候下班呀"
+
+	app.Commands = []cli.Command{
+		{
+			Name:    "config",
+			Aliases: []string{"c"},
+			Usage:   "complete a task on the list",
+			Action: func(c *cli.Context) error {
+				prompt := promptui.Prompt{
+					Label: "下班时间 >>>> ",
+				}
+
+				result, _ := prompt.Run()
+
+				viper.Set("time", result)
+				viper.WriteConfig()
+				return nil
+			},
+		},
+	}
+
 	app.Action = func(c *cli.Context) error {
 		date := time.Now().Local()
 		day := date.Weekday().String()
-		targetTime := time.Date(date.Year(), date.Month(), date.Day(), 19, 0, 0, 0, date.Location())
+		timing := strings.Split(viper.GetString("time"), ":")
+
+		if len(timing) != 2 {
+			fmt.Println("请按照格式：hour:minute 输出，比如 19:00")
+		}
+
+		hour, _ := strconv.Atoi(timing[0])
+		minute, _ := strconv.Atoi(timing[1])
+
+		targetTime := time.Date(date.Year(), date.Month(), date.Day(), hour, minute, 0, 0, date.Location())
 		if day == "Saturday" || day == "Sunday" {
 			fmt.Println("已经是周末了谢谢")
 		} else {

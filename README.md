@@ -5,13 +5,16 @@
 
 ### 安装
 ```sh
-go get github.com/csvwolf/offwork
+go get -u github.com/csvwolf/offwork
 ```
 
 ### 使用
 
 ```
+# 啥时候下班
 offwork
+# 设置下班时间 格式为 h:m（不设置默认为 19:00）
+offwork config
 ```
 
 ### Todo
@@ -19,3 +22,4 @@ offwork
 挖坑不填你懂得……
 
 - [ ] 计算下次上班时间
+- [ ] 时间设置校验

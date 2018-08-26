@@ -24,15 +24,15 @@ func getFormatDuation(nanoseconds int64) (int64, int64, int64) {
 
 func init() {
 	viper.SetConfigType("json")
-	viper.SetConfigName("config")         // name of config file (without extension)
-	viper.AddConfigPath("/etc/offowork/") // path to look for the config file in
-	viper.AddConfigPath("$HOME/.offwork") // call multiple times to add many search paths
-	viper.AddConfigPath(".")              // optionally look for config in the working directory
-	err := viper.ReadInConfig()           // Find and read the config file
-	if err != nil {                       // Handle errors reading the config file
+	viper.SetConfigName("config") // name of config file (without extension)
+	viper.AddConfigPath("$GOPATH/src/github.com/csvwolf/offwork")
+	err := viper.ReadInConfig() // Find and read the config file
+	if err != nil {             // Handle errors reading the config file
 		viper.SetDefault("time", "19:00")
+		f, _ := os.Create(os.Getenv("GOPATH") + "/src/github.com/csvwolf/offwork/config.json")
+		defer f.Close()
 		fmt.Println("初始化中……")
-		viper.WriteConfigAs("config.json")
+		viper.WriteConfig()
 		viper.ReadInConfig()
 	}
 }
